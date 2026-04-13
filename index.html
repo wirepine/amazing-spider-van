@@ -3,15 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>The Amazing Spider-Van</title>
+    <meta name="theme-color" content="#0f5f6a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Trip Legs" />
+    <link rel="manifest" href="manifest.json" />
+    <title>Trip Legs Planner</title>
     <style>
       :root {
-        --ink: #1d1b19;
-        --sand: #f6efe6;
-        --sunset: #cf5a35;
-        --teal: #0f5f6a;
+        --bg: #f5f0e8;
+        --ink: #1c1a18;
+        --accent: #0f5f6a;
+        --accent-2: #b5532a;
         --paper: #fffaf3;
-        --border: #dfd2c1;
+        --muted: #5b554f;
+        --border: #d6cbbd;
       }
 
       * {
@@ -20,151 +26,486 @@
 
       body {
         margin: 0;
-        font-family: "Palatino Linotype", "Book Antiqua", serif;
+        font-family: "Georgia", "Times New Roman", serif;
         color: var(--ink);
-        background: linear-gradient(135deg, #fdf7ef 0%, #f2e5d6 60%, #ead8c8 100%);
+        background: radial-gradient(circle at 15% 10%, #fdf7ef 0%, #f3eadf 45%, #eadfd2 100%);
       }
 
       header {
-        padding: 36px 20px 20px;
+        padding: 32px 20px 12px;
         text-align: center;
       }
 
       header h1 {
-        margin: 0 0 10px;
-        font-size: clamp(2rem, 3vw, 3.2rem);
-        letter-spacing: 0.04em;
+        font-size: clamp(1.8rem, 2.6vw, 2.6rem);
+        margin: 0 0 8px;
+        letter-spacing: 0.02em;
       }
 
       header p {
         margin: 0;
-        color: #5d544c;
+        color: var(--muted);
       }
 
       main {
         max-width: 1100px;
-        margin: 0 auto 40px;
+        margin: 0 auto;
         padding: 20px;
       }
 
-      .hero {
-        background: var(--paper);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 26px;
-        box-shadow: 0 14px 40px rgba(51, 38, 27, 0.12);
-      }
-
-      .hero-grid {
-        display: grid;
-        gap: 18px;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        align-items: center;
-      }
-
-      .hero h2 {
-        margin: 0 0 8px;
-        font-size: clamp(1.6rem, 2.4vw, 2.2rem);
-      }
-
-      .hero p {
-        margin: 0 0 12px;
-        color: #5d544c;
-      }
-
-      .cta-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-      }
-
-      .cta {
-        display: inline-block;
-        padding: 10px 18px;
-        border-radius: 999px;
-        font-weight: 700;
-        text-decoration: none;
-        color: white;
-        background: var(--teal);
-      }
-
-      .cta.secondary {
-        background: transparent;
-        border: 1px solid var(--teal);
-        color: var(--teal);
-      }
-
-      .placeholder {
-        background: linear-gradient(135deg, #f3d8c2, #d4c6b9);
-        border-radius: 16px;
-        min-height: 220px;
-        display: grid;
-        place-items: center;
-        color: #5d544c;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .section {
-        margin-top: 30px;
-        display: grid;
-        gap: 18px;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      }
-
-      .card {
+      .panel {
         background: var(--paper);
         border: 1px solid var(--border);
         border-radius: 16px;
         padding: 18px;
+        box-shadow: 0 8px 30px rgba(39, 30, 18, 0.08);
       }
 
-      .card h3 {
-        margin: 0 0 8px;
+      .controls {
+        display: grid;
+        gap: 16px;
       }
 
-      .card p {
-        margin: 0;
-        color: #5d544c;
+      label {
+        font-weight: 700;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fffdf8;
+        font-family: "Courier New", monospace;
+        resize: vertical;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 16px;
+        background: var(--accent);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.02em;
+      }
+
+      button.secondary {
+        background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .status {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .results {
+        margin-top: 24px;
+      }
+
+      .route-link {
+        display: inline-block;
+        margin-top: 10px;
+        font-weight: 700;
+        color: var(--accent-2);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: white;
+      }
+
+      th, td {
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        text-align: left;
+      }
+
+      th {
+        background: #efe6d9;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      tbody tr:nth-child(even) {
+        background: #fbf7f1;
+      }
+
+      .small {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .warning {
+        color: #8b2f2f;
+        font-weight: 700;
+      }
+
+      .home-link {
+        display: inline-block;
+        margin-top: 8px;
+        font-weight: 700;
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      /* PWA install banner */
+      #install-banner {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: var(--accent);
+        color: white;
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        font-family: Georgia, serif;
+      }
+
+      #install-banner button {
+        background: white;
+        color: var(--accent);
+        padding: 6px 14px;
+        font-size: 0.9rem;
+      }
+
+      #install-banner button.dismiss {
+        background: transparent;
+        color: white;
+        border: 1px solid white;
+      }
+
+      @media print {
+        body {
+          background: white;
+        }
+        .controls, .actions, header p, .small, .route-link, .home-link, #install-banner {
+          display: none !important;
+        }
+        .panel {
+          box-shadow: none;
+          border: 0;
+          padding: 0;
+        }
+        table {
+          page-break-inside: auto;
+        }
+        tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
       }
     </style>
   </head>
   <body>
+
+    <!-- PWA install prompt banner -->
+    <div id="install-banner">
+      <span>Install Trip Legs as an app on your device</span>
+      <button id="install-btn">Install</button>
+      <button class="dismiss" id="dismiss-btn">Not now</button>
+    </div>
+
     <header>
-      <h1>The Amazing Spider-Van</h1>
-      <p>Adventures on the open road, cataloged in maps, timelines, and campfire stories.</p>
+      <h1>Trip Legs Planner</h1>
+      <p>Paste stops (one per line) to generate each driving leg with distance, duration, and links.</p>
+      <a class="home-link" href="index.html">Back to home</a>
     </header>
     <main>
-      <section class="hero">
-        <div class="hero-grid">
-          <div>
-            <h2>Welcome home, traveler.</h2>
-            <p>Build the journey, browse past routes, and archive every map, photo, and artifact.</p>
-            <div class="cta-row">
-              <a class="cta" href="planner.html">Trip Planner</a>
-              <a class="cta secondary" href="#trips">Browse Trips</a>
-            </div>
-          </div>
-          <div class="placeholder">Logo / Hero Art</div>
+      <section class="panel controls">
+        <div>
+          <label for="stops">Trip Stops</label>
+          <textarea id="stops" placeholder="Seattle, WA&#10;Portland, OR&#10;Eugene, OR"></textarea>
+          <div class="small">Geocoding uses Nominatim (OpenStreetMap). Routing uses OSRM public demo server.</div>
+        </div>
+        <div class="actions">
+          <button id="build">Build Legs</button>
+          <button id="clearCache" class="secondary">Clear Geocode Cache</button>
+          <span id="status" class="status"></span>
         </div>
       </section>
 
-      <section id="trips" class="section">
-        <article class="card">
-          <h3>Map View</h3>
-          <p>Pin routes, trace paths, and jump into each story.</p>
-        </article>
-        <article class="card">
-          <h3>Timeline View</h3>
-          <p>Follow the seasons with a scrollable trip timeline.</p>
-        </article>
-        <article class="card">
-          <h3>Trip Assets</h3>
-          <p>Photos, articles, brochures, and hand-drawn maps.</p>
-        </article>
+      <section class="results panel" id="results" hidden>
+        <div id="summary"></div>
+        <a id="overallLink" class="route-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+        <div class="small" id="waypointWarning"></div>
+        <table id="legsTable">
+          <thead>
+            <tr>
+              <th>Leg</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Distance (mi)</th>
+              <th>Duration</th>
+              <th>Google Maps</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </section>
     </main>
+
+    <script>
+      // ── PWA: Register service worker ──────────────────────────────────────
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").catch((err) => {
+          console.warn("Service worker registration failed:", err);
+        });
+      }
+
+      // ── PWA: Install prompt ───────────────────────────────────────────────
+      let deferredPrompt = null;
+      const banner = document.getElementById("install-banner");
+      const installBtn = document.getElementById("install-btn");
+      const dismissBtn = document.getElementById("dismiss-btn");
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        banner.style.display = "flex";
+      });
+
+      installBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        banner.style.display = "none";
+      });
+
+      dismissBtn.addEventListener("click", () => {
+        banner.style.display = "none";
+      });
+
+      window.addEventListener("appinstalled", () => {
+        banner.style.display = "none";
+        deferredPrompt = null;
+      });
+
+      // ── App logic (unchanged) ─────────────────────────────────────────────
+      const geocodeCacheKey = "trip-legs-geocode-cache-v1";
+      const cache = JSON.parse(localStorage.getItem(geocodeCacheKey) || "{}");
+
+      const elements = {
+        stops: document.getElementById("stops"),
+        build: document.getElementById("build"),
+        clearCache: document.getElementById("clearCache"),
+        status: document.getElementById("status"),
+        results: document.getElementById("results"),
+        summary: document.getElementById("summary"),
+        overallLink: document.getElementById("overallLink"),
+        legsBody: document.querySelector("#legsTable tbody"),
+        waypointWarning: document.getElementById("waypointWarning"),
+      };
+
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      const formatDuration = (seconds) => {
+        const totalMinutes = Math.round(seconds / 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        if (hours === 0) return `${minutes} min`;
+        return `${hours} hr ${minutes} min`;
+      };
+
+      const formatMiles = (meters) => (meters / 1609.344).toFixed(1);
+
+      const setStatus = (text) => {
+        elements.status.textContent = text;
+      };
+
+      const cacheGeocode = (query, data) => {
+        cache[query.toLowerCase()] = data;
+        localStorage.setItem(geocodeCacheKey, JSON.stringify(cache));
+      };
+
+      const getCachedGeocode = (query) => cache[query.toLowerCase()];
+
+      const geocodeStop = async (query) => {
+        const cached = getCachedGeocode(query);
+        if (cached) return { ...cached, cached: true };
+
+        const url = new URL("https://nominatim.openstreetmap.org/search");
+        url.searchParams.set("format", "json");
+        url.searchParams.set("limit", "1");
+        url.searchParams.set("q", query);
+
+        const res = await fetch(url.toString(), {
+          headers: { "Accept-Language": "en" },
+        });
+        if (!res.ok) throw new Error(`Geocoding failed for "${query}"`);
+        const data = await res.json();
+        if (!data.length) throw new Error(`No geocode result for "${query}"`);
+
+        const item = data[0];
+        const result = {
+          lat: parseFloat(item.lat),
+          lon: parseFloat(item.lon),
+          displayName: item.display_name,
+        };
+        cacheGeocode(query, result);
+        return { ...result, cached: false };
+      };
+
+      const routeLeg = async (from, to) => {
+        const coords = `${from.lon},${from.lat};${to.lon},${to.lat}`;
+        const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=false`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Routing failed for ${from.displayName} → ${to.displayName}`);
+        const data = await res.json();
+        if (!data.routes || !data.routes.length) throw new Error("No route returned");
+        const leg = data.routes[0].legs[0];
+        return { distance: leg.distance, duration: leg.duration };
+      };
+
+      const buildGoogleLegLink = (from, to) => {
+        const url = new URL("https://www.google.com/maps/dir/");
+        url.searchParams.set("api", "1");
+        url.searchParams.set("origin", `${from.lat},${from.lon}`);
+        url.searchParams.set("destination", `${to.lat},${to.lon}`);
+        url.searchParams.set("travelmode", "driving");
+        return url.toString();
+      };
+
+      const buildGoogleOverallLink = (coords) => {
+        if (coords.length < 2) return "#";
+        const origin = coords[0];
+        const destination = coords[coords.length - 1];
+        const waypoints = coords.slice(1, -1);
+        const url = new URL("https://www.google.com/maps/dir/");
+        url.searchParams.set("api", "1");
+        url.searchParams.set("origin", `${origin.lat},${origin.lon}`);
+        url.searchParams.set("destination", `${destination.lat},${destination.lon}`);
+        if (waypoints.length) {
+          url.searchParams.set(
+            "waypoints",
+            waypoints.map((p) => `${p.lat},${p.lon}`).join("|")
+          );
+        }
+        url.searchParams.set("travelmode", "driving");
+        return url.toString();
+      };
+
+      const renderRows = (rows) => {
+        elements.legsBody.innerHTML = "";
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.index}</td>
+            <td>${row.from}</td>
+            <td>${row.to}</td>
+            <td>${row.distance}</td>
+            <td>${row.duration}</td>
+            <td><a href="${row.link}" target="_blank" rel="noopener noreferrer">Open</a></td>
+          `;
+          elements.legsBody.appendChild(tr);
+        });
+      };
+
+      const normalizeStops = (text) =>
+        text.split("\n").map((line) => line.trim()).filter(Boolean);
+
+      const setBusy = (busy) => {
+        elements.build.disabled = busy;
+      };
+
+      elements.clearCache.addEventListener("click", () => {
+        localStorage.removeItem(geocodeCacheKey);
+        Object.keys(cache).forEach((key) => delete cache[key]);
+        setStatus("Cache cleared.");
+      });
+
+      elements.build.addEventListener("click", async () => {
+        const stops = normalizeStops(elements.stops.value);
+        elements.results.hidden = true;
+        elements.waypointWarning.textContent = "";
+        if (stops.length < 2) {
+          setStatus("Add at least two stops.");
+          return;
+        }
+
+        setBusy(true);
+        setStatus("Geocoding stops...");
+        const geocoded = [];
+        let cachedCount = 0;
+        try {
+          for (const stop of stops) {
+            const result = await geocodeStop(stop);
+            geocoded.push({ ...result, label: stop });
+            if (result.cached) cachedCount += 1;
+            await sleep(1000);
+          }
+        } catch (err) {
+          setStatus(err.message);
+          setBusy(false);
+          return;
+        }
+
+        setStatus(`Routing legs... (${cachedCount} cached geocodes)`);
+
+        const rows = [];
+        let totalMeters = 0;
+        let totalSeconds = 0;
+        try {
+          for (let i = 0; i < geocoded.length - 1; i += 1) {
+            const from = geocoded[i];
+            const to = geocoded[i + 1];
+            const leg = await routeLeg(from, to);
+            totalMeters += leg.distance;
+            totalSeconds += leg.duration;
+            rows.push({
+              index: i + 1,
+              from: from.label,
+              to: to.label,
+              distance: formatMiles(leg.distance),
+              duration: formatDuration(leg.duration),
+              link: buildGoogleLegLink(from, to),
+            });
+            await sleep(400);
+          }
+        } catch (err) {
+          setStatus(err.message);
+          setBusy(false);
+          return;
+        }
+
+        renderRows(rows);
+        elements.summary.textContent = `Total distance: ${formatMiles(totalMeters)} mi • Total duration: ${formatDuration(totalSeconds)}`;
+
+        const overallLink = buildGoogleOverallLink(geocoded);
+        elements.overallLink.textContent = "Open overall route in Google Maps";
+        elements.overallLink.href = overallLink;
+
+        if (geocoded.length > 25) {
+          elements.waypointWarning.innerHTML =
+            '<span class="warning">Google Maps limits routes to 25 stops (23 waypoints). Consider trimming your list.</span>';
+        }
+
+        elements.results.hidden = false;
+        setStatus("Done.");
+        setBusy(false);
+      });
+    </script>
   </body>
 </html>
