@@ -3,6 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f5f6a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Trip Legs" />
+    <link rel="manifest" href="manifest.json" />
     <title>Trip Legs Planner</title>
     <style>
       :root {
@@ -165,11 +170,37 @@
         text-decoration: none;
       }
 
+      /* PWA install banner */
+      #install-banner {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: var(--accent);
+        color: white;
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        font-family: Georgia, serif;
+      }
+
+      #install-banner button {
+        background: white;
+        color: var(--accent);
+        padding: 6px 14px;
+        font-size: 0.9rem;
+      }
+
+      #install-banner button.dismiss {
+        background: transparent;
+        color: white;
+        border: 1px solid white;
+      }
+
       @media print {
         body {
           background: white;
         }
-        .controls, .actions, header p, .small, .route-link, .home-link {
+        .controls, .actions, header p, .small, .route-link, .home-link, #install-banner {
           display: none !important;
         }
         .panel {
@@ -188,6 +219,14 @@
     </style>
   </head>
   <body>
+
+    <!-- PWA install prompt banner -->
+    <div id="install-banner">
+      <span>Install Trip Legs as an app on your device</span>
+      <button id="install-btn">Install</button>
+      <button class="dismiss" id="dismiss-btn">Not now</button>
+    </div>
+
     <header>
       <h1>Trip Legs Planner</h1>
       <p>Paste stops (one per line) to generate each driving leg with distance, duration, and links.</p>
@@ -228,6 +267,43 @@
     </main>
 
     <script>
+      // ── PWA: Register service worker ──────────────────────────────────────
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").catch((err) => {
+          console.warn("Service worker registration failed:", err);
+        });
+      }
+
+      // ── PWA: Install prompt ───────────────────────────────────────────────
+      let deferredPrompt = null;
+      const banner = document.getElementById("install-banner");
+      const installBtn = document.getElementById("install-btn");
+      const dismissBtn = document.getElementById("dismiss-btn");
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        banner.style.display = "flex";
+      });
+
+      installBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        banner.style.display = "none";
+      });
+
+      dismissBtn.addEventListener("click", () => {
+        banner.style.display = "none";
+      });
+
+      window.addEventListener("appinstalled", () => {
+        banner.style.display = "none";
+        deferredPrompt = null;
+      });
+
+      // ── App logic (unchanged) ─────────────────────────────────────────────
       const geocodeCacheKey = "trip-legs-geocode-cache-v1";
       const cache = JSON.parse(localStorage.getItem(geocodeCacheKey) || "{}");
 
@@ -276,9 +352,7 @@
         url.searchParams.set("q", query);
 
         const res = await fetch(url.toString(), {
-          headers: {
-            "Accept-Language": "en",
-          },
+          headers: { "Accept-Language": "en" },
         });
         if (!res.ok) throw new Error(`Geocoding failed for "${query}"`);
         const data = await res.json();
@@ -302,10 +376,7 @@
         const data = await res.json();
         if (!data.routes || !data.routes.length) throw new Error("No route returned");
         const leg = data.routes[0].legs[0];
-        return {
-          distance: leg.distance,
-          duration: leg.duration,
-        };
+        return { distance: leg.distance, duration: leg.duration };
       };
 
       const buildGoogleLegLink = (from, to) => {
@@ -353,10 +424,7 @@
       };
 
       const normalizeStops = (text) =>
-        text
-          .split("\n")
-          .map((line) => line.trim())
-          .filter(Boolean);
+        text.split("\n").map((line) => line.trim()).filter(Boolean);
 
       const setBusy = (busy) => {
         elements.build.disabled = busy;
@@ -430,7 +498,8 @@
         elements.overallLink.href = overallLink;
 
         if (geocoded.length > 25) {
-          elements.waypointWarning.innerHTML = '<span class="warning">Google Maps limits routes to 25 stops (23 waypoints). Consider trimming your list.</span>';
+          elements.waypointWarning.innerHTML =
+            '<span class="warning">Google Maps limits routes to 25 stops (23 waypoints). Consider trimming your list.</span>';
         }
 
         elements.results.hidden = false;
